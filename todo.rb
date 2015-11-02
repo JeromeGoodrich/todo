@@ -1,19 +1,4 @@
-class TodoList
 
-  def self.load(file)
-    todo = TodoList.new
-    File.read(file).each_line do |line|
-
-
-  end
-
-  def initialize
-  end
-
-
-
-
-end
 
 class TodoItem
 
@@ -38,7 +23,7 @@ class CLI
     case command
     when 'new'
       TodoList.new(args.first).save
-      File.new(")
+      File.new()
     when 'add'
       TodoList.new(args.first).add(args.first)
     when 'complete'

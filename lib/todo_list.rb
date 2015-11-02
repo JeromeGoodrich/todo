@@ -1,40 +1,31 @@
+require "todo_item"
+
 class TodoList
+  attr_accessor :list
 
   def initialize
-    @items = []
-    @completed_items = []
+    @list ||= []
   end
 
-  def create(file_name)
-    File.open("#{file_name}.txt","w+")
+  def create(file)
+    File.open("#{file}.txt", "w")
   end
 
-  def add_new_item(item, file)
-    File.open("#{file_name}.txt","a+") {|f| f.puts("#{item}")}
+  def add(item, file)
+    todo_item = TodoItem.new(item)
+    File.open("#{file}.txt", "a+") {|f| f.puts "[ ] #{todo_item.name}"}
   end
 
-  def complete_item(file, item)
-    @completed_items << item
+  def finish(item, file)
+    File.open("#{file}.txt", "r+") do |f|
+      f.each_line do |line|
+        if line == "[ ] #{item}"
+
   end
 
-  def item_status(item)
-    @completed_items.include?(item)
-  end
-
-  def remove_item(file, item_number)
-    @items.delete_at(item_number.to_i-1)
-    write_file(file)
-  end
-
-  def items_to_print
-    a = []
-    @items.each do |item|
-      if @completed_items.include?(item)
-        a << "#{@list_number}.[X] #{item}\n"
-      else
-        a << "#{@list_number}.[ ] #{item}\n"
-      end
-    end
-      return a
+  def delete(item)
+    key = @list.key(item)
+    @list.delete(key)
   end
 end
+

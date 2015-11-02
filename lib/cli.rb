@@ -1,27 +1,30 @@
-require "find"
-
 class CommandLineInterface
 
   def initialize(args)
     @args = args
+    @todo = TodoList.new
   end
 
   def run
-
-    command = @args.first
+    command = @args[0]
     args = @args.drop(0)
-    todo = TodoList.new
       case command
         when "create"
-          puts "created #{todo.create(args[1])}"
+          puts "created new new file: #{@todo.create(args[1])}"
         when 'add'
-          todo.add_new_item(args[1],args[2])
-        when 'complete'
-          todo.complete_item(args[1], args[2])
-        when 'remove'
-          todo.remove_item(args[1], args[2])
+          @todo.add(args[1], args[2])
+        when 'done'
+          @todo.finish(args[1], args[2])
+        when 'delete'
+          @todo.delete(args[1])
         when 'show'
-          todo.write_file(args[0])
+          File.open("#{args[1]}.txt", "r") do |f|
+            num = 1
+            f.each_line do |line|
+              puts "#{num}.#{line}"
+              num += 1
+            end
+          end
       end
   end
 end
