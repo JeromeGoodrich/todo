@@ -1,0 +1,21 @@
+["1.[ ] yoga\n"]
+["1.[ ] pick-up pork butt\n"]
+2.[ ] pick-up pork butt
+2.[ ] peel sweet potatoes
+2.[ ] shred sweet potatoes
+2.[ ] +1
+2.[ ] +1
+2.[ ] +1
+1.[ ] +1
+1.[ ] +1
+2.[ ] +1
+2.[ ] +1
+2.[ ] +1
+2.[ ] +1
+2.[ ] +1
+1.[ ] +1
+1.[ ] +1
+1.[ ] +1
+1.[ ] +1
+1.[ ] +1
+1.[ ] something else
