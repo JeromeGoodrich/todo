@@ -8,7 +8,7 @@ class TodoList
     File.open("#{file}.txt", "a+") {|f| f.puts "[ ] #{item}"}
   end
 
-  def finish(item, file)
+  def done(item, file)
     text = File.read("#{file}.txt").gsub("[ ] #{item}", "[X] #{item}")
     File.open("#{file}.txt", "w") { |f| f.puts text}
   end
