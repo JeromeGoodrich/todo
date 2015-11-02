@@ -1,31 +1,31 @@
 require "todo_item"
 
 class TodoList
-  attr_accessor :list
-
-  def initialize
-    @list ||= []
-  end
 
   def create(file)
     File.open("#{file}.txt", "w")
   end
 
   def add(item, file)
-    todo_item = TodoItem.new(item)
-    File.open("#{file}.txt", "a+") {|f| f.puts "[ ] #{todo_item.name}"}
+    File.open("#{file}.txt", "a+") {|f| f.puts "[ ] #{item}"}
   end
 
   def finish(item, file)
-    File.open("#{file}.txt", "r+") do |f|
-      f.each_line do |line|
-        if line == "[ ] #{item}"
-
+    text = File.read("#{file}.txt").gsub("[ ] #{item}", "[X] #{item}")
+    File.open("#{file}.txt", "w") { |f| f.puts text}
   end
 
-  def delete(item)
-    key = @list.key(item)
-    @list.delete(key)
+  def delete(item, file)
+    new_text_array = delete_item(item, file)
+    File.open("#{file}.txt", "w") {|f| f.puts new_text_array}
+  end
+
+private
+
+def delete_item(item, file)
+    File.open("#{file}.txt", "r+") do |f|
+      return f.readlines.delete_if {|line| line.include?("#{item}") }
+    end
   end
 end
 

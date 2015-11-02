@@ -1,2 +1,0 @@
-1.[ ] #<TodoItem:0x007fe85a827f90>
-1.[ ] #<TodoItem:0x007fa2c3a57ef0>

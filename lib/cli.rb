@@ -16,7 +16,7 @@ class CommandLineInterface
         when 'done'
           @todo.finish(args[1], args[2])
         when 'delete'
-          @todo.delete(args[1])
+          @todo.delete(args[1], args[2])
         when 'show'
           File.open("#{args[1]}.txt", "r") do |f|
             num = 1
