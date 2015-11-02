@@ -1,5 +1,3 @@
-require "todo_item"
-
 class TodoList
 
   def create(file)
