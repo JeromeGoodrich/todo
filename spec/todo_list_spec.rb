@@ -1,8 +1,6 @@
 require "rspec"
 require "todo_list"
 
-
-
 describe TodoList do
   let(:todo) {TodoList.new}
   let(:cli) {CommandLineInterface.new(args)}

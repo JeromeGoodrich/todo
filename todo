@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-$: << File.expand_path(File.dirname(__FILE__) + "/../lib")
+$: << File.expand_path("../lib",__FILE__)
 
 require "todo_list"
 require "cli"
@@ -9,3 +9,4 @@ cli = CommandLineInterface.new(ARGV)
 todo = TodoList.new
 
 cli.run
+
