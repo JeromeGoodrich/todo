@@ -58,6 +58,14 @@ class TodoList
     end
   end
 
+  def delete_list(list)
+    if list_exist?(list)
+      File.delete("lists/#{list}.txt")
+    else
+      raise ListError, "Can't delete list #{list} because it doesn't exist"
+    end
+  end
+
 private
 
   def use_list(list, option, text=nil)

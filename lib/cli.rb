@@ -20,6 +20,8 @@ class CommandLineInterface
         delete_command(args[0], args[1])
       when "show", "s"
         show_command(args[0])
+      when "delete_list", "dl"
+        delete_list_command(args[0])
       else
         command_help
       end
@@ -51,6 +53,11 @@ class CommandLineInterface
     @todo.show(list)
   end
 
+  def delete_list_command(list)
+    @todo.delete_list(list)
+    deleted_list(list)
+  end
+
 private
 
   def new_list(list)
@@ -67,6 +74,10 @@ private
 
   def deleted_task(task, list)
     puts "deleted task #{task} in list #{list}"
+  end
+
+  def deleted_list(list)
+    puts "deleted list #{list}"
   end
 
   def command_help
