@@ -73,7 +73,9 @@ private
       if option == "r"
         f.readlines
       elsif option == "w"
-        f.puts text
+        if text != nil
+          f.puts text
+        end
       elsif option == "a+"
         f.puts "[ ] #{text}"
       end
@@ -105,9 +107,7 @@ private
 
   def add_task_by_name(task, list)
     a = use_list(list, "r")
-    if a.index(task) == nil
-      raise ListError, "Can't complete #{task} because it doesn't exist"
-    else
+    if a.index.include?(task)
       a.each do |line|
         if line.include?("#{task}")
           if line.include?("[X]")
@@ -119,6 +119,8 @@ private
           end
         end
       end
+    else
+      raise ListError, "Can't complete #{task} because it doesn't exist"
     end
   end
 
@@ -130,10 +132,10 @@ private
 
   def delete_task(task, list)
     a = use_list(list, "r")
-      if a.index(task) == nil
-        raise ListError, "Can't delete #{task} because it doesn't exist"
-      else
+      if a.index.include?(task)
         a.delete_if {|line| line.include?("#{task}") }
+      else
+        raise ListError, "Can't delete #{task} because it doesn't exist"
       end
   end
 end
