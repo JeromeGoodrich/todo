@@ -4,11 +4,17 @@ class TodoList
   class ListError < StandardError
   end
 
+  def initialize
+    @db = SQLite3::Database.new "lists/lists.db"
+  end
+
+
+
   def create(list)
     if list_exist?(list)
       raise ListError, "The list #{list} already exists"
     else
-      use_list(list,"w")
+      @db.execute "CREATE TABLE IF NOT EXISTS #{list}(Id INTEGER PRIMARY KEY, Task TEXT, Done INTEGER)"
     end
   end
 
@@ -62,7 +68,7 @@ class TodoList
 
   def delete_list(list)
     if list_exist?(list)
-      File.delete("lists/#{list}.txt")
+      File.delete("lists/#{list}")
     else
       raise ListError, "Can't delete list #{list} because it doesn't exist"
     end
