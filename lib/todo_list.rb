@@ -1,3 +1,5 @@
+require 'sqlite3'
+
 class TodoList
   class ListError < StandardError
   end
