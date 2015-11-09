@@ -24,6 +24,7 @@ Example: `delete 'do laundry' new_todo`
 *show* or *s* will show the contents of a specified list
 Example: `s new_todo`
 
-
+*delete_list* or *dl* will delete a specified list
+Example: `dl new_todo`
 
 
