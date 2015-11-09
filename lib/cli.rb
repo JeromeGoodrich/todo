@@ -1,3 +1,5 @@
+require 'optparse'
+
 class CommandLineInterface
 
   def initialize(args)
@@ -5,29 +7,58 @@ class CommandLineInterface
     @todo = TodoList.new
   end
 
+
   def run
+    options = {}
+
+    opt_parser = OptionParser.new do |opt|
+      opt.banner = "Commands:"
+      opt.separator "    create, new, c or n:             new list"
+      opt.separator "    add or a:                        add task to list"
+      opt.separator "    done:                            mark task as done"
+      opt.separator "    delete or d:                     delete task"
+      opt.separator "    show or s:                       show list"
+      opt.separator "    delete_list or dl:               delete list"
+      opt.separator ""
+      opt.separator "Options:"
+
+      opt.on("-l","--list LIST", "which list you want to access") do |list|
+        options[:list] = list
+      end
+
+      opt.on("-t","--task TASK", "which task you want to create, alter, or delete") do |task|
+        options[:task] = task
+      end
+
+      opt.on("-h","--help","help") do
+        puts opt_parser
+        exit
+      end
+    end
+
+    opt_parser.parse!
+
     command = @args[0]
-    args = @args.drop(1)
       case command
 
       when "create","new","c","n"
-        create_command(args[0])
+        create_command(options[:list])
       when "add","a"
-        add_command(args[0], args[1])
+        add_command(options[:task], options[:list])
       when "done"
-        done_command(args[0], args[1])
+        done_command(options[:task], options[:list])
       when "delete", "d"
-        delete_command(args[0], args[1])
+        delete_command(options[:task], options[:list])
       when "show", "s"
-        show_command(args[0])
+        show_command(options[:list])
       when "delete_list", "dl"
-        delete_list_command(args[0])
+        delete_list_command(options[:list])
       else
-        command_help
+        puts opt_parser
       end
      rescue => e
       puts e.message
-    end
+  end
 
   def create_command(list)
     @todo.create(list)
