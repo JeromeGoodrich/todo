@@ -14,13 +14,13 @@ class TodoList
     if list_exist?(list)
       raise ListError, "The list #{list} already exists"
     else
-      @db.execute "CREATE TABLE IF NOT EXISTS #{list}(Id INTEGER PRIMARY KEY, Task TEXT, Done INTEGER)"
+      @db.execute "CREATE TABLE IF NOT EXISTS #{list}(rowid, Task TEXT, Done INTEGER)"
     end
   end
 
   def add(task, list)
     if list_exist?(list)
-      use_list(list, "a+", task)
+      @db.execute "INSERT INTO #{list}(Task, Done) VALUES('#{task}',0)"
     else
       raise ListError, "Can't add #{task} to #{list} because list #{list} doesn't exist"
     end
@@ -91,7 +91,7 @@ private
   end
 
   def list_exist?(list)
-    File.exist?("lists/#{list}.txt")
+    File.exist?("lists/lists.db")
   end
 
   def convert_num_to_task(task_number, list)
