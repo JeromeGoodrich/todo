@@ -53,11 +53,18 @@ class CommandLineInterface
         show_command(options[:list])
       when "delete_list", "dl"
         delete_list_command(options[:list])
+      when "save"
+        save_to_file_command(options[:list])
       else
         puts opt_parser
       end
      rescue => e
       puts e.message
+  end
+
+  def save_to_file_command(list)
+    @todo.save_to_file(list)
+    saved_list(list)
   end
 
   def create_command(list)
@@ -90,6 +97,10 @@ class CommandLineInterface
   end
 
 private
+
+  def saved_list(list)
+    puts "saved list #{list} to printable file"
+  end
 
   def new_list(list)
     puts "created new list: #{list}"

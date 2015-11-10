@@ -15,6 +15,7 @@ class TodoList
       id = set_id(@db.execute "SELECT * FROM Lists")
       @db.execute "INSERT INTO Lists(id,Name) VALUES(#{id},'#{list}')"
     else
+      save_to_file(list)
       raise ListError, "The list #{list} already exists"
     end
   end
@@ -80,6 +81,16 @@ class TodoList
     else
       @db.execute "DELETE FROM Tasks WHERE list_id=#{list_id}"
       @db.execute "DELETE FROM Lists WHERE Name='#{list}'"
+    end
+  end
+
+  def save_to_file(list)
+    list_id = get_list_id(list)
+    File.open("lists/#{list}.txt", "w") do |f|
+      rows = @db.execute "SELECT id,Name,Done FROM Tasks WHERE list_id =#{list_id}"
+      rows.each do |row|
+        f.puts row.join("\s")
+      end
     end
   end
 
