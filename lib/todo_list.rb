@@ -15,7 +15,6 @@ class TodoList
       id = set_id(@db.execute "SELECT * FROM Lists")
       @db.execute "INSERT INTO Lists(id,Name) VALUES(#{id},'#{list}')"
     else
-      save_to_file(list)
       raise ListError, "The list #{list} already exists"
     end
   end
@@ -111,79 +110,13 @@ private
   end
 
   def check_in_table(list,task)
+    list_id = get_list_id(list)
     x = @db.execute "SELECT Done FROM Tasks WHERE list_id=#{list_id} AND id=#{task.to_i} OR Name='#{task}'"
     x = x.flatten[0]
     return x
   end
 
-  def use_list(list, option, text=nil)
-    File.open("lists/#{list}.txt", option) do |f|
-      if option == "r"
-        f.readlines
-      elsif option == "w"
-        if text != nil
-          f.puts text
-        end
-      elsif option == "a+"
-        f.puts "[ ] #{text}"
-      end
-    end
-  end
-
   def list_exist(list)
     @db.execute "SELECT * FROM Lists WHERE Name='#{list}'"
-  end
-
-  def convert_num_to_task(task_number, list)
-    a = use_list(list, "r")
-    task = a[(task_number.to_i - 1)]
-      if task == nil
-        raise ListError, "Task does not exist"
-      end
-    return task
-  end
-
-  def add_task_by_number(task_number, list)
-      task = convert_num_to_task(task_number, list)
-      if task.include?("[X]")
-        raise ListError, "Task is already completed"
-      else
-        task.slice! "[ ] "
-        done(task, list)
-      end
-  end
-
-  def add_task_by_name(task, list)
-    a = use_list(list, "r")
-    if a.index.include?(task)
-      a.each do |line|
-        if line.include?("#{task}")
-          if line.include?("[X]")
-            raise ListError, "Task is already completed"
-          else
-            text = File.read("lists/#{list}.txt").gsub("[ ] #{task}", "[X] #{task}")
-            use_list(list, "w", text)
-            break
-          end
-        end
-      end
-    else
-      raise ListError, "Can't complete #{task} because it doesn't exist"
-    end
-  end
-
-  def delete_task_by_number(task_number, list)
-    task = convert_num_to_task(task_number, list)
-    task.slice! "[ ] "
-    delete(task, list)
-  end
-
-  def delete_task(task, list)
-    a = use_list(list, "r")
-      if a.index.include?(task)
-        a.delete_if {|line| line.include?("#{task}") }
-      else
-        raise ListError, "Can't delete #{task} because it doesn't exist"
-      end
   end
 end
