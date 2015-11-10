@@ -12,11 +12,11 @@ class TodoList
 
   def create(list)
     if list_exist(list).empty?
-     a = @db.execute "SELECT * FROM Lists WHERE Name='#{list}'"
-        if a.empty?
+     arry = @db.execute "SELECT * FROM Lists"
+        if arry.empty?
           id = 1
         else
-          id = a.count + 1
+          id = arry.count + 1
         end
           @db.execute "INSERT INTO Lists(id,Name) VALUES(#{id},'#{list}')"
     else
