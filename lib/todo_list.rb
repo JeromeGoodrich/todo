@@ -11,16 +11,16 @@ class TodoList
 
 
   def create(list)
-    if list_exist?(list)
-      raise ListError, "The list #{list} already exists"
-    else
-      @db.execute "CREATE TABLE IF NOT EXISTS #{list}(rowid, Task TEXT, Done INTEGER)"
-    end
+    # if list_exist?(list)
+    #   raise ListError, "The list #{list} already exists"
+    # else
+      @db.execute "CREATE TABLE IF NOT EXISTS #{list}(rowid, Task TEXT, Done TEXT)"
+    # end
   end
 
   def add(task, list)
     if list_exist?(list)
-      @db.execute "INSERT INTO #{list}(Task, Done) VALUES('#{task}',0)"
+      @db.execute "INSERT INTO #{list}(Task, Done) VALUES('#{task}','[ ]')"
     else
       raise ListError, "Can't add #{task} to #{list} because list #{list} doesn't exist"
     end
@@ -29,9 +29,9 @@ class TodoList
   def done(task, list)
     if list_exist?(list)
       if task.to_i != 0
-        add_task_by_number(task, list)
+        @db.execute "UPDATE #{list} SET Done='[X]' WHERE rowid=#{task}"
       else
-        add_task_by_name(task, list)
+        @db.execute "UPDATE #{list} SET Done='[X]' WHERE Task='#{task}'"
       end
     else
       raise ListError, "Can't complete #{task} because list #{list} doesn't exist"
@@ -41,10 +41,9 @@ class TodoList
   def delete(task, list)
     if list_exist?(list)
       if task.to_i != 0
-        delete_task_by_number(task, list)
+        @db.execute "DELETE FROM #{list} WHERE rowid=#{task}"
       else
-        text = delete_task(task, list)
-        use_list(list, "w", text)
+        @db.execute "DELETE FROM #{list} WHERE Task='#{task}'"
       end
     else
       raise ListError, "Can't delete #{task} because list #{list} doesn't exist"
@@ -53,13 +52,9 @@ class TodoList
 
   def show(list)
     if list_exist?(list)
-      a = use_list(list, "r")
-      if a.empty?
-        raise ListError, "No tasks have been added to #{list} yet"
-      else
-        a.each_with_index do |line, index|
-          puts "#{index+1}.#{line}"
-        end
+      rows = @db.execute "SELECT * FROM #{list}"
+      rows.each do |row|
+        puts row.join("\s")
       end
     else
       raise ListError, "Can't show list #{list} because it doesn't exist"
