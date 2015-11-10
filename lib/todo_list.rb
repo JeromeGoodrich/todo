@@ -6,66 +6,94 @@ class TodoList
 
   def initialize
     @db = SQLite3::Database.new "lists/lists.db"
+    @db.execute "CREATE TABLE IF NOT EXISTS Lists(id INTEGER, Name TEXT)"
+    @db.execute "CREATE TABLE IF NOT EXISTS Tasks(id INTEGER, list_id INTEGER, Name TEXT, Done TEXT)"
   end
 
-
-
   def create(list)
-    # if list_exist?(list)
-    #   raise ListError, "The list #{list} already exists"
-    # else
-      @db.execute "CREATE TABLE IF NOT EXISTS #{list}(rowid, Task TEXT, Done TEXT)"
-    # end
+    if list_exist(list).empty?
+     a = @db.execute "SELECT * FROM Lists WHERE Name='#{list}'"
+        if a.empty?
+          id = 1
+        else
+          id = a.count + 1
+        end
+          @db.execute "INSERT INTO Lists(id,Name) VALUES(#{id},'#{list}')"
+    else
+      raise ListError, "The list #{list} already exists"
+    end
   end
 
   def add(task, list)
-    if list_exist?(list)
-      @db.execute "INSERT INTO #{list}(Task, Done) VALUES('#{task}','[ ]')"
-    else
+    if list_exist(list).empty?
       raise ListError, "Can't add #{task} to #{list} because list #{list} doesn't exist"
+    else
+      list_id = @db.execute "SELECT id FROM Lists WHERE Name='#{list}'"
+      list_id = list_id.flatten[0]
+
+      arry = @db.execute "SELECT * FROM Tasks WHERE list_id=#{list_id}"
+      if arry.empty?
+        id = 1
+      else
+        id = arry.count + 1
+      end
+     @db.execute "INSERT INTO Tasks(id, list_id, Name, Done) VALUES(#{id},#{list_id},'#{task}','[ ]')"
     end
   end
 
   def done(task, list)
-    if list_exist?(list)
-      if task.to_i != 0
-        @db.execute "UPDATE #{list} SET Done='[X]' WHERE rowid=#{task}"
-      else
-        @db.execute "UPDATE #{list} SET Done='[X]' WHERE Task='#{task}'"
-      end
-    else
+    if list_exist(list).empty?
       raise ListError, "Can't complete #{task} because list #{list} doesn't exist"
+    else
+      if task.to_i != 0
+        list_id = @db.execute "SELECT id FROM Lists WHERE Name='#{list}'"
+        list_id = list_id.flatten[0]
+        @db.execute "UPDATE Tasks SET Done='[X]' WHERE list_id=#{list_id} AND id=#{task.to_i}"
+      else
+        list_id = @db.execute "SELECT id FROM Lists WHERE Name='#{list}'"
+        list_id = list_id.flatten[0]
+        @db.execute "UPDATE Tasks SET Done='[X]' WHERE list_id=#{list_id} AND Name='#{task}'"
+      end
     end
   end
 
   def delete(task, list)
-    if list_exist?(list)
-      if task.to_i != 0
-        @db.execute "DELETE FROM #{list} WHERE rowid=#{task}"
-      else
-        @db.execute "DELETE FROM #{list} WHERE Task='#{task}'"
-      end
-    else
+    if list_exist(list).empty?
       raise ListError, "Can't delete #{task} because list #{list} doesn't exist"
+    else
+      if task.to_i != 0
+        list_id = @db.execute "SELECT id FROM Lists WHERE Name='#{list}'"
+        list_id = list_id.flatten[0]
+
+        @db.execute "DELETE FROM Tasks WHERE list_id=#{list_id} AND id=#{task.to_i}"
+      else
+        list_id = @db.execute "SELECT id FROM Lists WHERE Name='#{list}'"
+        list_id = list_id.flatten[0]
+
+        @db.execute "DELETE FROM Tasks WHERE list_id=#{list_id} AND Name='#{task}'"
+      end
     end
   end
 
   def show(list)
-    if list_exist?(list)
-      rows = @db.execute "SELECT * FROM #{list}"
+    if list_exist(list).empty?
+      raise ListError, "Can't show list #{list} because it doesn't exist"
+    else
+      list_id = @db.execute "SELECT id FROM Lists WHERE Name='#{list}'"
+      list_id = list_id.flatten[0]
+
+      rows = @db.execute "SELECT id,Name,Done FROM Tasks WHERE list_id =#{list_id}"
       rows.each do |row|
         puts row.join("\s")
       end
-    else
-      raise ListError, "Can't show list #{list} because it doesn't exist"
     end
   end
 
   def delete_list(list)
-    if list_exist?(list)
-      File.delete("lists/#{list}")
-    else
+    if list_exist(list).empty?
       raise ListError, "Can't delete list #{list} because it doesn't exist"
+    else
+      @db.execute "DROP TABLE IF EXISTS #{list}"
     end
   end
 
@@ -85,8 +113,8 @@ private
     end
   end
 
-  def list_exist?(list)
-    File.exist?("lists/lists.db")
+  def list_exist(list)
+    @db.execute "SELECT * FROM Lists WHERE Name='#{list}'"
   end
 
   def convert_num_to_task(task_number, list)
