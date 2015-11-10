@@ -7,7 +7,7 @@ class TodoList
   def initialize
     @db = SQLite3::Database.new "lists/lists.db"
     @db.execute "CREATE TABLE IF NOT EXISTS Lists(id INTEGER, Name TEXT)"
-    @db.execute "CREATE TABLE IF NOT EXISTS Tasks(id INTEGER, list_id INTEGER, Name TEXT, Done TEXT)"
+    @db.execute "CREATE TABLE IF NOT EXISTS Tasks(id INTEGER, list_id INTEGER, Name TEXT, Done INTEGER)"
   end
 
   def create(list)
@@ -25,7 +25,7 @@ class TodoList
     else
       list_id = get_list_id(list)
       id = set_id(@db.execute "SELECT * FROM Tasks WHERE list_id=#{list_id}")
-      @db.execute "INSERT INTO Tasks(id, list_id, Name, Done) VALUES(#{id},#{list_id},'#{task}','[ ]')"
+      @db.execute "INSERT INTO Tasks(id, list_id, Name, Done) VALUES(#{id},#{list_id},'#{task}',0)"
     end
   end
 
@@ -36,12 +36,12 @@ class TodoList
     if list_exist(list).empty?
       raise ListError, "Can't complete #{task} because list #{list} doesn't exist"
     else
-      if result == "[X]"
+      if result.to_i == 1
         raise ListError, "Task #{task} has already been done"
       elsif result == nil
         raise ListError, "Task #{task} doesn't exist in list #{list}"
       else
-        @db.execute "UPDATE Tasks SET Done='[X]' WHERE list_id=#{list_id} AND id=#{task.to_i} or Name='#{task}'"
+        @db.execute "UPDATE Tasks SET Done=1 WHERE list_id=#{list_id} AND id=#{task.to_i} or Name='#{task}'"
       end
     end
   end
@@ -68,6 +68,11 @@ class TodoList
     else
       rows = @db.execute "SELECT id,Name,Done FROM Tasks WHERE list_id =#{list_id}"
       rows.each do |row|
+        if row[2].to_i == 0
+          row[2] = "[ ]"
+        elsif row[2].to_i == 1
+          row[2] = "[X]"
+        end
         puts row.join("\s")
       end
     end
@@ -88,6 +93,11 @@ class TodoList
     File.open("lists/#{list}.txt", "w") do |f|
       rows = @db.execute "SELECT id,Name,Done FROM Tasks WHERE list_id =#{list_id}"
       rows.each do |row|
+        if row[2].to_i == 0
+          row[2] = "[ ]"
+        elsif row[2].to_i == 1
+          row[2] = "[X]"
+        end
         f.puts row.join("\s")
       end
     end

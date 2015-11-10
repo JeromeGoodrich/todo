@@ -7,7 +7,6 @@ class CommandLineInterface
     @todo = TodoList.new
   end
 
-
   def run
     options = {}
 
@@ -62,6 +61,8 @@ class CommandLineInterface
       puts e.message
   end
 
+private
+
   def save_to_file_command(list)
     @todo.save_to_file(list)
     saved_list(list)
@@ -96,8 +97,6 @@ class CommandLineInterface
     deleted_list(list)
   end
 
-private
-
   def saved_list(list)
     puts "saved list #{list} to printable file"
   end
@@ -120,24 +119,5 @@ private
 
   def deleted_list(list)
     puts "deleted list #{list}"
-  end
-
-  def command_help
-    puts "Sorry, that command does not exist. Here is a list of valid commands:"
-    puts ""
-    puts "use 'create', 'new', 'c' or 'n' followed by the name you want to create your file"
-    puts "EX: create my_file"
-    puts ""
-    puts "use 'add' or 'a' to add a task to a file"
-    puts "EX: add 'do laundry' my_file"
-    puts ""
-    puts "to mark a task as done use 'done'"
-    puts "EX: done 'do laundry' my_file"
-    puts ""
-    puts "use 'delete' or 'd' to delete a task off a list"
-    puts "EX: delete 'do laundry' my_file"
-    puts ""
-    puts "use 'show' or 's' to show the contents of a file"
-    puts "EX: s my_file"
   end
 end
