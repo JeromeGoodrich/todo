@@ -27,7 +27,7 @@ Example: `s -l new_list`
 *delete_list* or *dl* will delete a specified list
 Example: `dl -l new_list`
 
-*save* will save your list to a printable txt file
+*save* will save your list to a printable .txt file in the Lists directory
 Example: `save -l new_list`
 
 # Options
@@ -37,4 +37,5 @@ Example: `save -l new_list`
 *-t* or *--task* specifies the task you are creating or altering
 
 *-h* or *--help* provides a list of all the commands and options
+
 
