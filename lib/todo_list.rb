@@ -4,11 +4,32 @@ class TodoList
   class ListError < StandardError
   end
 
-  def initialize
-    @db = SQLite3::Database.new "lists/lists.db"
-    @db.execute "CREATE TABLE IF NOT EXISTS Lists(id INTEGER, Name TEXT)"
-    @db.execute "CREATE TABLE IF NOT EXISTS Tasks(id INTEGER, list_id INTEGER, Name TEXT, Done INTEGER)"
+  def initialize(db)
+    @db = db
   end
+
+  def lists
+    records = @db.execute("SELECT * FROM Lists;")
+    records.map do |record|
+      {
+        id: record.first,
+        name: record.last,
+      }
+    end
+  end
+
+  def tasks
+    records = @db.execute("SELECT * FROM Tasks;")
+    records.map do |record|
+      {
+        id: record.first,
+        list_id: record[1],
+        name: record[2],
+        done: record.last,
+      }
+    end
+  end
+
 
   def create(list)
     if list_exist(list).empty?

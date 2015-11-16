@@ -4,6 +4,12 @@ $: << File.expand_path("../lib",__FILE__)
 require "todo_list"
 require "cli"
 
-cli = CommandLineInterface.new(ARGV)
+db = SQLite3::Database.new "lists/lists.db"
+db.execute "CREATE TABLE IF NOT EXISTS Lists(id INTEGER, Name TEXT)"
+db.execute "CREATE TABLE IF NOT EXISTS Tasks(id INTEGER, list_id INTEGER, Name TEXT, Done INTEGER)"
+
+list = TodoList.new(db)
+
+cli = CommandLineInterface.new(ARGV, list)
 cli.run
 

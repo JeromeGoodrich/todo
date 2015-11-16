@@ -2,9 +2,10 @@ require 'optparse'
 
 class CommandLineInterface
 
-  def initialize(args)
+  def initialize(args, list, out = $stdout)
     @args = args
-    @todo = TodoList.new
+    @todo = list
+    @out = out
   end
 
   def run
@@ -35,33 +36,34 @@ class CommandLineInterface
       end
     end
 
-    opt_parser.parse!
+    opt_parser.parse!(@args)
 
     command = @args[0]
-      case command
 
-      when "create","new","c","n"
-        create_command(options[:list])
-      when "add","a"
-        add_command(options[:task], options[:list])
-      when "done"
-        done_command(options[:task], options[:list])
-      when "delete", "d"
-        delete_command(options[:task], options[:list])
-      when "show", "s"
-        show_command(options[:list])
-      when "delete_list", "dl"
-        delete_list_command(options[:list])
-      when "save"
-        save_to_file_command(options[:list])
-      else
-        puts opt_parser
-      end
-     rescue => e
-      puts e.message
+    case command
+    when "create","new","c","n"
+      create_command(options[:list])
+    when "add","a"
+      add_command(options[:task], options[:list])
+    when "done"
+      done_command(options[:task], options[:list])
+    when "delete", "d"
+      delete_command(options[:task], options[:list])
+    when "show", "s"
+      show_command(options[:list])
+    when "delete_list", "dl"
+      delete_list_command(options[:list])
+    when "save"
+      save_to_file_command(options[:list])
+    else
+      puts opt_parser
+    end
+
+  rescue => e
+    @out.puts e.message
   end
 
-private
+  private
 
   def save_to_file_command(list)
     @todo.save_to_file(list)
@@ -98,26 +100,26 @@ private
   end
 
   def saved_list(list)
-    puts "saved list #{list} to printable file"
+    @out.puts "saved list #{list} to printable file"
   end
 
   def new_list(list)
-    puts "created new list: #{list}"
+    @out.puts "created new list: #{list}"
   end
 
   def added_task(task, list)
-    puts "added new task #{task} to list #{list}"
+    @out.puts "added new task #{task} to list #{list}"
   end
 
   def completed_task(task, list)
-    puts "completed task #{task} in list #{list}"
+    @out.puts "completed task #{task} in list #{list}"
   end
 
   def deleted_task(task, list)
-    puts "deleted task #{task} in list #{list}"
+    @out.puts "deleted task #{task} in list #{list}"
   end
 
   def deleted_list(list)
-    puts "deleted list #{list}"
+    @out.puts "deleted list #{list}"
   end
 end

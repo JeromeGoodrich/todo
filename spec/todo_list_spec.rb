@@ -2,99 +2,100 @@ require "rspec"
 require "todo_list"
 
 describe TodoList do
-  let(:todo) {TodoList.new}
-  let(:cli) {CommandLineInterface.new(args)}
-  let(:output) {StringIO.new}
+  let(:test_db) {
+    db = SQLite3::Database.new "lists/lists_test.db"
+    db.execute "CREATE TABLE IF NOT EXISTS Lists(id INTEGER, Name TEXT)"
+    db.execute "CREATE TABLE IF NOT EXISTS Tasks(id INTEGER, list_id INTEGER, Name TEXT, Done INTEGER)"
+    db
+  }
+  let(:list) { TodoList.new(test_db) }
 
-  it "creates a new todo list titled work" do
-    todo.name = "work"
-
-    expect(todo.name).to eq("work")
+  after do
+    test_db.execute("DROP TABLE Lists;")
+    test_db.execute("DROP TABLE Tasks;")
   end
 
-  it "creates a new item called 'get paper clips'" do
-    todo.add_new_item("get paperclips")
+  it "creates a list" do
+    list.create("NewList")
 
-    expect(todo.items.last).to eq("get paperclips")
+    expect(list.lists.first[:name]).to eq("NewList")
   end
 
-  it "knows whether an item is completed" do
-    todo.add_new_item("get paperclips")
-    todo.complete_item("get paperclips")
+  it "raises an error if the list already exists" do
+    list.create("NewList")
 
-    expect(todo.completed_items.last).to eq(("get paperclips"))
+    expect { list.create("NewList") }.to raise_error TodoList::ListError
+    expect(list.lists.count).to eq(1)
   end
 
-  it "removes an item from the todo list" do
-    todo.add_new_item("get paperclips")
-    todo.add_new_item("call mom")
-    todo.remove_item(1)
+  it "adds a task to the todo list" do
+    list.create("NewList")
+    list.add("get milk", "NewList")
 
-    expect(todo.items).to eq(["call mom"])
+    expect(list.tasks.first[:list_id]).to eq(list.lists.first[:id])
+    expect(list.tasks.count).to eq(1)
   end
 
-  it "prints the title of the list" do
-    todo.name = "work"
-    cli.title
+  it "completes a task" do
+    list.create("NewList")
+    list.add("get milk", "NewList")
+    list.add("create test", "NewList")
+    list.done("get milk", "NewList")
+    list.done("2","NewList")
 
-    expect(output.string).to eq("work")
+
+    expect(list.tasks.first[:done]).to eq(1)
+    expect(list.tasks[1][:done]).to eq(1)
   end
 
-  it "prints a numbered list of incomplete items" do
-    todo.add_new_item("get paperclips")
-    todo.add_new_item("call mom")
-    todo.add_new_item("save the world")
+  it "raises an error if the task doesn't exist" do
+    list.create("NewList")
 
-    cli.list
-
-    expect(output.string).to eq("1.[ ] get paperclips\n2.[ ] call mom\n3.[ ] save the world\n")
+    expect { list.done("non-existent task", "NewList") }.to raise_error TodoList::ListError
+    expect { list.delete("non-existent task", "NewList") }.to raise_error TodoList::ListError
   end
 
-  it "marks a completed item with an X" do
-    todo.add_new_item("get paperclips")
-    todo.add_new_item("call mom")
-    todo.add_new_item("save the world")
-    todo.complete_item("call mom")
+  it "raises an error if the task has already been done" do
+    list.create("NewList")
+    list.add("new task", "NewList")
+    list.done("new task", "NewList")
 
-    ui.list
-
-    expect(output.string).to eq("1.[ ] get paperclips\n2.[X] call mom\n3.[ ] save the world\n")
+    expect { list.done("new task", "NewList") }.to raise_error TodoList::ListError
   end
 
-  it "gets an input from the user" do
-    $stdin = StringIO.new("some input")
+  it "deletes a task" do
+    list.create("NewList")
+    list.add("task", "NewList")
+    list.add("another task", "NewList")
+    list.delete("task", "NewList")
+    list.delete("another task", "NewList")
 
-    expect(ui.get_input).to eq("some input")
+    expect(list.tasks.first).to eq(nil)
+    expect(list.tasks[1]).to eq(nil)
   end
 
+  it "shows the list" do
+    list.create("NewList")
+    list.add("task", "NewList")
+    display = list.show("NewList")
+    display = display[0]
+    display = display.join("\s")
 
+
+    expect(display).to eq("1 task [ ]")
+  end
+
+  it "deletes a list" do
+    list.create("NewList")
+    list.delete_list("NewList")
+
+    expect(list.lists.empty?).to eq(true)
+  end
+
+  it "saves a list to a file" do
+    list.create("TestList")
+    list.save_to_file("TestList")
+
+    expect(File.exist?("lists/TestList.txt")).to eq(true)
+  end
 end
-
-
-# Requirements:
-
-# From the command line, I should be able to perform these actions:
-
-# todo new work
-
-# Should create a new todo list titled "work".
-
-# todo add work 'Get paperclips'
-
-# Should add a new todo item called 'Get paperclips'
-
-# todo show work
-
-# Should show the work todo list, with completed items checked, for example:
-
-# work
-# 1. [ ] Get paperclips
-# 2. [X] Print that thing
-
-# todo complete 1
-
-# Should mark the numbered item in the todo list as complete
-
-# todo remove 2
-
-# Should remove the numbered item from the todo list
