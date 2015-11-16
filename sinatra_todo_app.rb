@@ -43,6 +43,12 @@ put '/task/:id' do
   redirect to ("/#{params[:list_id]}")
 end
 
+not_found do
+  status 404
+  status 500
+  erb :oops
+end
+
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/lists/lists.db")
 

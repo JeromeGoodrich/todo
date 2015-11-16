@@ -88,11 +88,9 @@ describe "Sinatra Todo Application" do
     expect(Task.count).to eq(0)
   end
 
+  it "shows an error page for an error" do
+    get"/hello/chum"
 
-
-
-
-  it "" do
-    expect(List.count).to eq(0)
+    expect(last_response.body).to include("the page you were looking for does not exist")
   end
 end
