@@ -30,7 +30,7 @@
     <tr>
       <td><strong><%= task.name %></strong></td>
       <td>
-        <form action="/task/<%=task.id %>" method="post">
+        <form action="/user/<%= @current_user.id%>/list/<%=@list.id %>/task/<%= task.id %>" method="post">
           <input type="hidden" name="_method" value="put">
           <input type="hidden" name="list_id" value="<%= @list.id %>">
           <% if task.done == false %>
@@ -46,7 +46,7 @@
         </form>
       </td>
       <td>
-        <form action="/task/<%=task.id%>" method="post">
+        <form action="/user/<%= @current_user.id%>/list/<%=@list.id %>/task/<%= task.id %>" method="post">
           <input type="hidden" name="_method" value="delete">
           <input type="hidden" name="list_id" value="<%= @list.id %>">
           <button class="btn btn-danger" type="submit">

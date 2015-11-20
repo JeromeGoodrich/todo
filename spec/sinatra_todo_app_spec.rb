@@ -5,6 +5,7 @@ describe "Sinatra Todo Application" do
   after do
     List.all.destroy
     Task.all.destroy
+    User.all.destroy
   end
 
   it "should load the home page" do

@@ -16,4 +16,5 @@ RSpec.configure do |config|
   DataMapper.finalize
   List.auto_migrate!
   Task.auto_migrate!
+  User.auto_migrate!
 end
