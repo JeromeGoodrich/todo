@@ -1,6 +1,5 @@
 require "spec_helper"
 
-
 describe "Sinatra Todo Application" do
 
 
