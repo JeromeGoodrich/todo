@@ -1,1 +1,5 @@
 [^.]*
+
+.list_test.db
+
+.lists.db
