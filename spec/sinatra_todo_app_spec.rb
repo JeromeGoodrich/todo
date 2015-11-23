@@ -18,7 +18,7 @@ describe "Sinatra Todo Application" do
     end
   end
 
-  context "POST /sign_up"
+  context "POST /sign_up" do
     it "should sign up a new user" do
       post "/sign_up", {:user => {name: "J", password: "12341234"}}
 
