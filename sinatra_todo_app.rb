@@ -51,35 +51,38 @@ delete '/delete/list' do
 end
 
 get '/list/:list_id' do
-  lists = List.all(user_id: session[:current_user])
   @list = List.get(params[:list_id])
-  if lists.include?(@list)
+  if authorize?(@list)
     @tasks = Task.all(:list_id => @list.id)
     erb :list
-  else
-    flash[:unauthorized] = "tsk tsk that list isn't yours"
-    redirect to ("/user/#{session[:current_user]}")
   end
 end
 
 post '/list/:list_id/new/task' do
   @list = List.get(params[:list_id])
-  Task.create(params[:task])
-  redirect to ("/list/#{@list.id}")
+  if authorize?(@list)
+    Task.create(params[:task])
+    redirect to ("/list/#{@list.id}")
+  end
 end
 
 put '/list/:list_id/task/:task_id' do
-    @list = List.get(params[:list_id])
+  @list = List.get(params[:list_id])
+  if authorize?(@list)
     task = Task.get(params[:task_id])
     task.done = !task.done
     task.save
     redirect to ("list/#{@list.id}")
+  end
 end
 
-delete '/delete/task/:task_id' do
-  task = Task.get(params[:task_id])
-  task.destroy
-  redirect to ("/list/#{task.list_id}")
+delete '/delete/list/:list_id/task/:task_id' do
+  @list = List.get(params[:list_id])
+  if authorize?(@list)
+    task = Task.get(params[:task_id])
+    task.destroy
+    redirect to ("/list/#{task.list_id}")
+  end
 end
 
 get '/logout' do
@@ -91,6 +94,15 @@ not_found do
   erb :oops
 end
 
+def authorize?(list)
+  lists = List.all(user_id: session[:current_user])
+  if lists.include?(list)
+    true
+  else
+    flash[:unauthorized] = "tsk tsk that list isn't yours"
+    redirect to ("/user/#{session[:current_user]}")
+  end
+end
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/lists/lists.db")
 
