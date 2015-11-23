@@ -1,6 +1,8 @@
 require "spec_helper"
 
+
 describe "Sinatra Todo Application" do
+
 
   after do
     List.all.destroy
@@ -9,89 +11,82 @@ describe "Sinatra Todo Application" do
   end
 
   it "should load the home page" do
-    get"/"
-
-    expect(last_response).to  be_ok
-  end
-
-  it "should load a list of existing lists" do
-    post"/",{:list => 'My Todo'}
-
-    expect(last_response.body).to include("My Todo")
-  end
-
-  it "should load the correct list page" do
-    list = List.new
-    list.name = 'My Todo'
-    save_result = list.save
-    get"/#{list.id}", {:id => list.id}
+    get "/"
 
     expect(last_response).to be_ok
-    expect(last_response.body).to include("My Todo")
   end
 
-  it "should delete the list" do
-    list = List.new
-    list.name = 'My Todo'
-    list.save
+  it "should sign up a new user" do
+    post "/sign_up", {:user => {name: "J", password: "12341234"}}
 
-    list1 = List.new
-    list1.name = 'Another Todo'
-    list1.save
+    expect(last_response.status).to be(302)
+  end
 
-    delete"/#{list.id}", {:id => list.id}
+  it "should sign in an existing user" do
+    User.create(name: "Jerome", password: "12341234")
+    post "/sign_in", {:user => {name: "Jerome", password: "12341234"}}
 
     expect(last_response.status).to eq(302)
-    expect(List.count).to eq(1)
   end
 
-  it "should  create a new task" do
-    list = List.new
-    list.name = 'My Todo'
-    list.save
+  it "shouldn't sign in a user that doesn't exist" do
+    post "/sign_in", {:user => {name: "Jerome", password: "12341234"}}
 
-    post "/1",{:task => 'get milk'}
-
-    expect(last_response.body).to include("get milk")
+    expect(last_response.status).to eq(200)
   end
 
-  it "finishes a task" do
-    list = List.new
-    list.name = 'My Todo'
-    list.save
+  xit "loads the page if the user is the session's current user" do
+    user = User.create(id: "1", name: "Jerome", password: "12341234")
+    List.create(id: "1", name: "New List", user_id: "1")
+    get "/user/1", {}, {'rack.session' => {current_user: "1"} }
 
-    task = Task.new
-    task.list_id = 1
-    task.name = "get_milk"
-    task.done = false
-    task.save
+    puts
 
-    put "/task/#{task.id}", {id: task.id}
+    expect(last_response.body).to eq("New List")
+  end
+
+  it "redirects to session[:current_user]'s index" do
+    User.create(id: "1", name: "Jerome", password: "12341234")
+    User.create(id: "2", name: "Sol", password: "12341234")
+    get "/user/1", {}, {'rack.session' => {current_user: "2"} }
+
+    expect(last_response.redirect?).to eq(true)
+    follow_redirect!
+    expect(last_request.path).to eq("/user/2")
+  end
+
+  it "should display a newly created list" do
+    post "/new/list", {list: "New List"}
+
+    expect(last_response.body).to include("New List")
+  end
+
+  xit "should show a list to the appropriate user" do
+    list = List.create(name: "New List", user_id: "1")
+    get "/list/1", {}, {"rack.session" => {current_user: "1"}}
+
+    expect(last_response.body).to include("New List")
+  end
+
+  it "should not show a list to an unauthorized user" do
+    list = List.create(name: "New List", user_id: "2")
+    get "/list/1", {}, {"rack.session" => {current_user: "1"}}
 
     expect(last_response.status).to eq(302)
-    expect(Task.first.done).to eq(true)
   end
 
-  it "deletes a task" do
-    list = List.new
-    list.name = 'My Todo'
-    list.save
+  xit "should display a newly created task" do
+    User.create(id: "1", name: "Jerome", password: "12341234")
+    List.create(name: "New List", user_id: "1")
+    post '/list/1/new/task', {task: "New Task"}
+    get '/list/1', {}, {"rack.session" => {current_user: "1"}}
 
-    task = Task.new
-    task.list_id = 1
-    task.name = "get_milk"
-    task.done = false
-    task.save
-
-    delete "/task/#{task.id}", {id: task.id}
-
-    expect(last_response.status).to eq(302)
-    expect(Task.count).to eq(0)
+    expect(last_response.body).to include("New Task")
   end
 
-  it "shows an error page for an error" do
-    get"/hello/chum"
+  it "ends a session" do
+    get "/logout", {}, {"rack.session" => {current_user: "1"}}
 
-    expect(last_response.body).to include("the page you were looking for does not exist")
+    expect(rack_mock_session.cookie_jar[:current_user]).to eq(nil)
   end
 end
