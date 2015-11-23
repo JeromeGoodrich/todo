@@ -2,14 +2,20 @@
   <h1>Todoist <small>A Light Weight Todo App</small></h1>
 </div>
 
-<%= @current_user.name %>
+<%= @user.name %>
+
+<% if flash[:unauthorized] %>
+  <div class="alert alert-danger" role="alert">
+  <%= flash[:unauthorized] %>
+  </div>
+<% end %>
 
 <div class="row">
-  <form method="post">
+  <form action="/new/list" method="post">
     <div class="form-group">
       <div class="col-sm-10">
         <input class="form-control" placeholder="create a new list here..." type="text" name="list[name]">
-        <input class="hidden" name="list[user_id]" value="<%= @current_user.id %>">
+        <input class="hidden" name="list[user_id]" value="<%= @user.id %>">
       </div>
     </div>
     <div class="form group">
@@ -27,13 +33,13 @@
   <div class="col-sm-10">
     <div class="list-group">
       <% @lists.each do |list| %>
-      <a href="/user/<%= @current_user.id%>/list/<%=list.id%>" class="list-group-item">
+      <a href="/list/<%=list.id%>" class="list-group-item">
         <%= list.name %>
         <span class="badge">Completed Tasks: <%= list.tasks.all(done: true).count %></span>
         <span class="badge">Incomplete Tasks: <%= list.tasks.all(done: false).count %></span>
-        <form action="/user/<%=@current_user.id%>" method="post">
+        <form action="/delete/list" method="post">
           <input type="hidden" name="_method" value="delete">
-          <input type="hidden" name="list_id" value="<%= list.id %>">
+          <input type="hidden" name="id" value="<%= list.id %>">
           <button class="btn btn-danger btn-xs" type="submit">
           <span class="glyphicon  glyphicon-trash"></span>
           </button>

@@ -1,79 +1,93 @@
 require 'sinatra'
+require 'sinatra/flash'
 require 'data_mapper'
+require 'bcrypt'
+
+enable :sessions
 
 get '/' do
-  erb :sign_up
+  erb :home
 end
 
-post '/' do
-  @current_user = User.create(params[:user])
-  redirect to ("/user/#{@current_user.id}")
-end
-
-get '/sign_in' do
-  erb :sign_in
+post '/sign_up' do
+  user = User.create(params[:user])
+  session[:current_user] = user.id
+  redirect to ("/user/#{user.id}")
 end
 
 post '/sign_in' do
-
+  user = User.first(:name => params[:user][:name])
+  if user == nil
+    flash[:no_user] = "no user was found by that name"
+    erb :home
+  elsif user.password != params[:user][:password]
+    flash[:password_error] = "incorrect password"
+    erb :home
+  else
+    session[:current_user] = user.id
+    redirect to ("/user/#{user.id}")
+  end
 end
 
 get '/user/:id' do
-  @current_user = User.get(params[:id])
-  @lists = List.all(:user_id => params[:id])
-  erb :index
+  @user = User.get(params[:id])
+  if session[:current_user] == @user.id
+    @lists = List.all(:user_id => params[:id])
+    erb :index
+  else
+    flash[:unauthorized] = "tsk tsk that page isn't yours"
+    redirect to ("/user/#{session[:current_user]}")
+  end
 end
 
-post '/user/:id' do
-  @current_user = User.get(params[:id])
+post '/new/list' do
   List.create(params[:list])
-  redirect to ("/user/#{@current_user.id}")
+  redirect to ("/user/#{session[:current_user]}")
 end
 
-delete '/user/:id' do
-  @current_user = User.get(params[:id])
+delete '/delete/list' do
   List.get(params[:id]).destroy
-  redirect to ("/user/#{@current_user.id}")
+  redirect to ("/user/#{session[:current_user]}")
 end
 
-get '/user/*/list/*' do
-  # require 'pry'; binding.pry
-  @current_user = User.get(params[:splat][0])
-  @list = List.get(params[:splat][1])
-  @tasks = Task.all(:list_id => @list.id)
-  erb :list
+get '/list/:list_id' do
+  lists = List.all(user_id: session[:current_user])
+  @list = List.get(params[:list_id])
+  if lists.include?(@list)
+    @tasks = Task.all(:list_id => @list.id)
+    erb :list
+  else
+    flash[:unauthorized] = "tsk tsk that list isn't yours"
+    redirect to ("/user/#{session[:current_user]}")
+  end
 end
 
-post '/user/*/list/*' do
-  @current_user = User.get(params[:splat][0])
-  @list = List.get(params[:splat][1])
+post '/list/:list_id/new/task' do
+  @list = List.get(params[:list_id])
   Task.create(params[:task])
-  redirect to ("/user/#{@current_user.id}/list/#{@list.id}")
+  redirect to ("/list/#{@list.id}")
 end
 
-put '/user/*/list/*/task/*' do
-  @current_user = User.get(params[:splat][0])
-  @list = List.get(params[:splat][1])
-    task = Task.get(params[:splat][2])
-    if task.done == false
-      task.done = true
-    else
-      task.done = false
-    end
-      task.save
-    redirect to ("/user/#{@current_user.id}/list/#{@list.id}")
+put '/list/:list_id/task/:task_id' do
+    @list = List.get(params[:list_id])
+    task = Task.get(params[:task_id])
+    task.done = !task.done
+    task.save
+    redirect to ("list/#{@list.id}")
 end
 
-delete '/user/*/list/*/task/*' do
-  @current_user = User.get(params[:splat][0])
-  @list = List.get(params[:splat][1])
-  Task.get(params[:splat][2]).destroy
-  redirect to ("/user/#{@current_user.id}/list/#{@list.id}")
+delete '/delete/task/:task_id' do
+  task = Task.get(params[:task_id])
+  task.destroy
+  redirect to ("/list/#{task.list_id}")
+end
+
+get '/logout' do
+  session.clear
+  redirect to ("/")
 end
 
 not_found do
-  status 404
-  status 500
   erb :oops
 end
 
@@ -104,6 +118,7 @@ class User
   include DataMapper::Resource
   property :id, Serial
   property :name, String, :required => true, :unique => true
+  property :password, BCryptHash, :required => true
 
   has n, :lists
 end
