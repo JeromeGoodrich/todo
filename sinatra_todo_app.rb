@@ -19,10 +19,10 @@ post '/sign_in' do
   user = User.first(:name => params[:user][:name])
   if user == nil
     flash[:no_user] = "no user was found by that name"
-    erb :home
+    redirect back
   elsif user.password != params[:user][:password]
     flash[:password_error] = "incorrect password"
-    erb :home
+    redirect back
   else
     session[:current_user] = user.id
     redirect to ("/user/#{user.id}")
@@ -35,8 +35,7 @@ get '/user/:id' do
     @lists = List.all(:user_id => params[:id])
     erb :index
   else
-    flash[:unauthorized] = "tsk tsk that page isn't yours"
-    redirect to ("/user/#{session[:current_user]}")
+    not_found
   end
 end
 
@@ -99,8 +98,7 @@ def authorize?(list)
   if lists.include?(list)
     true
   else
-    flash[:unauthorized] = "tsk tsk that list isn't yours"
-    redirect to ("/user/#{session[:current_user]}")
+    not_found
   end
 end
 
