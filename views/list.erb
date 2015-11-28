@@ -10,7 +10,7 @@
 
 <br>
 
-<form action="/list/<%= @list.id %>/new/task" method="post">
+<form action="/list/<%= @list.id %>/tasks" method="post">
   <div class="form-group">
     <input class="form-control" type="hidden" name="task[list_id]" value="<%= @list.id %>">
     <div class="col-sm-10">
@@ -46,7 +46,7 @@
         </form>
       </td>
       <td>
-        <form action="/delete/list/<%= @list.id %>/task/<%= task.id %>" method="post">
+        <form action="/list/<%= @list.id %>/task/<%= task.id %>" method="post">
           <input type="hidden" name="_method" value="delete">
           <input type="hidden" name="list_id" value="<%= @list.id %>">
           <button class="btn btn-danger" type="submit">

@@ -2,8 +2,10 @@ require 'sinatra'
 require 'sinatra/flash'
 require 'data_mapper'
 require 'bcrypt'
+require 'tilt/erb'
 
 enable :sessions
+set :session_secret, "secret"
 
 get '/' do
   erb :home
@@ -39,12 +41,12 @@ get '/user/:id' do
   end
 end
 
-post '/new/list' do
+post '/lists' do
   List.create(params[:list])
   redirect to ("/user/#{session[:current_user]}")
 end
 
-delete '/delete/list' do
+delete '/list/:list_id' do
   List.get(params[:id]).destroy
   redirect to ("/user/#{session[:current_user]}")
 end
@@ -75,7 +77,7 @@ put '/list/:list_id/task/:task_id' do
   end
 end
 
-delete '/delete/list/:list_id/task/:task_id' do
+delete '/list/:list_id/task/:task_id' do
   @list = List.get(params[:list_id])
   if authorize?(@list)
     task = Task.get(params[:task_id])

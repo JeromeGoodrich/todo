@@ -85,20 +85,21 @@ describe "Sinatra Todo Application" do
     end
   end
 
-  describe "POST /new/list" do
+  describe "POST /lists" do
     before :each do
-      post "/new/list", {:list => {id: 1, name: "New List", user_id: "#{user.id}"}}, {"rack.session" => {current_user: "#{user.id}"}}
+      post "/lists", {:list => {id: 1, name: "New List", user_id: "#{user.id}"}}, {"rack.session" => {current_user: "#{user.id}"}}
     end
 
     it "should create a new list" do
 
       expect(List.count).to eq(1)
+      expect(List.last.name).to eq("New List")
     end
   end
 
-  describe "DELETE /delete/list" do
+  describe "DELETE /list/:list_id" do
     it "deletes a list" do
-      delete "/delete/list", {id: "#{list.id}"}, {"rack.session" => {current_user: "#{user.id}"}}
+      delete "list/:list_id", {id: "#{list.id}"}, {"rack.session" => {current_user: "#{user.id}"}}
 
       expect(List.count).to  eq(0)
     end
@@ -121,21 +122,16 @@ describe "Sinatra Todo Application" do
     end
   end
 
-  describe "POST list/:list_id/new/task" do
+  describe "POST list/:list_id/tasks" do
     it "should create a new task" do
       post "/list/#{list.id}/new/task", {:task => {name: "New Task", list_id: "#{list.id}"}}, {"rack.session" => {current_user: "#{user.id}"}}
 
       expect(Task.count).to eq(1)
-
-      # If I create a different test for the following assertion
-      # It doesn't think the route exists for some reason
-
-      get "/list/#{list.id}"
-      expect(last_response.body).to include("New Task")
+      expect(Task.last.name).to eq("New Task")
     end
   end
 
-  describe "DELETE /delete/list/:list_id/task/:task_id" do
+  describe "DELETE /list/:list_id/task/:task_id" do
     it "should delete a task" do
       delete "/delete/list/#{list.id}/task/#{task.id}", {}, {"rack.session" => {current_user: "#{user.id}"}}
 

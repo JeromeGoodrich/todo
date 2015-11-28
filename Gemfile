@@ -6,6 +6,7 @@ gem 'bcrypt'
 gem 'sinatra-flash'
 gem 'sqlite3'
 gem 'dm-sqlite-adapter'
+gem 'tilt-erb'
 
 group :test do
   gem 'rspec'

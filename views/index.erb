@@ -11,7 +11,7 @@
 <% end %>
 
 <div class="row">
-  <form action="/new/list" method="post">
+  <form action="/lists" method="post">
     <div class="form-group">
       <div class="col-sm-10">
         <input class="form-control" placeholder="create a new list here..." type="text" name="list[name]">
@@ -37,14 +37,13 @@
         <%= list.name %>
         <span class="badge">Completed Tasks: <%= list.tasks.all(done: true).count %></span>
         <span class="badge">Incomplete Tasks: <%= list.tasks.all(done: false).count %></span>
-        <form action="/delete/list" method="post">
+        <form action="/list/<%= list.id %>" method="post">
           <input type="hidden" name="_method" value="delete">
           <input type="hidden" name="id" value="<%= list.id %>">
           <button class="btn btn-danger btn-xs" type="submit">
           <span class="glyphicon  glyphicon-trash"></span>
           </button>
         </form>
-
       </a>
       <% end %>
     </div>
